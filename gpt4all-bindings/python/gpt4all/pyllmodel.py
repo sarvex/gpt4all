@@ -116,11 +116,8 @@ class LLModel:
         llmodel.llmodel_loadModel(self.model, model_path.encode('utf-8'))
         filename = os.path.basename(model_path)
         self.model_name = os.path.splitext(filename)[0]
-    
-        if llmodel.llmodel_isModelLoaded(self.model):
-            return True
-        else:
-            return False
+
+        return bool(llmodel.llmodel_isModelLoaded(self.model))
 
     def generate(self, 
                  prompt: str,

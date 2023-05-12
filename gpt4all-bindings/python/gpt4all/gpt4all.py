@@ -56,8 +56,7 @@ class GPT4All():
             Model list in JSON format.
         """
         response = requests.get("https://gpt4all.io/models/models.json")
-        model_json = json.loads(response.content)
-        return model_json
+        return json.loads(response.content)
 
     @staticmethod
     def retrieve_model(model_name: str, model_path: str = None, allow_download: bool = True) -> str:
@@ -79,7 +78,7 @@ class GPT4All():
             model_filename += ".bin"
 
         # Validate download directory
-        if model_path == None:
+        if model_path is None:
             model_path = DEFAULT_MODEL_DIRECTORY
             if not os.path.exists(DEFAULT_MODEL_DIRECTORY):
                 try:
@@ -96,14 +95,11 @@ class GPT4All():
                 print("Found model file.")
                 return model_dest
 
-            # If model file does not exist, download
             elif allow_download: 
-                # Make sure valid model filename before attempting download
-                model_match = False
-                for item in GPT4All.list_models():
-                    if model_filename == item["filename"]:
-                        model_match = True
-                        break
+                model_match = any(
+                    model_filename == item["filename"]
+                    for item in GPT4All.list_models()
+                )
                 if not model_match:
                     raise ValueError(f"Model filename not in model list: {model_filename}")
                 return GPT4All.download_model(model_filename, model_path)
@@ -127,7 +123,7 @@ class GPT4All():
 
         def get_download_url(model_filename):
             return f"https://gpt4all.io/models/{model_filename}"
-    
+
         # Download model
         download_path = os.path.join(model_path, model_filename).replace("\\", "\\\\")
         download_url = get_download_url(model_filename)
@@ -149,7 +145,7 @@ class GPT4All():
                 "An error occurred during download. Downloaded file may not work."
             )
 
-        print("Model downloaded at: " + download_path)
+        print(f"Model downloaded at: {download_path}")
         return download_path
 
     def generate(self, prompt: str, **generate_kwargs) -> str:
@@ -206,22 +202,15 @@ class GPT4All():
         if verbose:
             print(response)
 
-        response_dict = {
+        return {
             "model": self.model.model_name,
-            "usage": {"prompt_tokens": len(full_prompt), 
-                      "completion_tokens": len(response), 
-                      "total_tokens" : len(full_prompt) + len(response)},
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": response
-                    }
-                }
-            ]
+            "usage": {
+                "prompt_tokens": len(full_prompt),
+                "completion_tokens": len(response),
+                "total_tokens": len(full_prompt) + len(response),
+            },
+            "choices": [{"message": {"role": "assistant", "content": response}}],
         }
-
-        return response_dict
     
     @staticmethod
     def _build_prompt(messages: List[Dict], 
