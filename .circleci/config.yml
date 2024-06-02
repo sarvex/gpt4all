@@ -6,7 +6,7 @@ orbs:
 jobs:
   build-py-linux:
     docker:
-      - image: circleci/python:3.8
+      - image: circleci/python:3.10
     steps:
       - checkout
       - run:
@@ -112,7 +112,7 @@ jobs:
 
   store-and-upload-wheels:
     docker:
-      - image: circleci/python:3.8
+      - image: circleci/python:3.10
     steps:
       - setup_remote_docker
       - attach_workspace:
